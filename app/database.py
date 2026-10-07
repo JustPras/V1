@@ -4,6 +4,9 @@ from contextlib import contextmanager
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'slotarmor.db')
 
+if os.environ.get('VERCEL') == '1':
+    DB_PATH = '/tmp/slotarmor.db'
+
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     with get_db() as conn:
