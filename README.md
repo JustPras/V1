@@ -36,3 +36,4 @@ SlotArmor is a deposit-secured booking system for independent professionals. It 
 4. Open your browser:
    - **Client view:** `http://127.0.0.1:8000`
    - **Admin login:** `http://127.0.0.1:8000/admin/login` (Default username: `admin`, password: `password`)
+"# V1" 
