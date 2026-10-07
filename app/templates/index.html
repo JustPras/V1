@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --apple-blue: #0A84FF;
+            --apple-gray: #8E8E93;
+            --apple-bg: #F2F2F7;
+            --apple-surface: #FFFFFF;
+            --apple-label: #000000;
+            --apple-secondary: #3C3C43;
+        }
+
+        .dark {
+            --apple-blue: #0A84FF;
+            --apple-gray: #636366;
+            --apple-bg: #000000;
+            --apple-surface: #1C1C1E;
+            --apple-label: #FFFFFF;
+            --apple-secondary: #EBEBF5;
+        }
+
+        * { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif; }
+
+        body {
+            background: var(--apple-bg);
+            color: var(--apple-label);
+            transition: background 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .apple-hero-bg {
+            background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(10,132,255,0.18) 0%, transparent 70%),
+                        radial-gradient(ellipse 60% 50% at 80% 60%, rgba(94,92,230,0.12) 0%, transparent 60%),
+                        var(--apple-bg);
+        }
+
+        .dark .apple-hero-bg {
+            background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(10,132,255,0.25) 0%, transparent 70%),
+                        radial-gradient(ellipse 60% 50% at 80% 60%, rgba(94,92,230,0.18) 0%, transparent 60%),
+                        #000000;
+        }
+
+        .glass-card {
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 0.5px solid rgba(255,255,255,0.7);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+        }
+
+        .dark .glass-card {
+            background: rgba(28,28,30,0.85);
+            border: 0.5px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset;
+        }
+
+        .apple-btn {
+            background: var(--apple-blue);
+            color: white;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 17px;
+            letter-spacing: -0.3px;
+            padding: 16px 32px;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .apple-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .apple-btn:active { transform: scale(0.98); }
+
+        .feature-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .nav-blur {
+            background: rgba(242,242,247,0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+        }
+
+        .dark .nav-blur {
+            background: rgba(0,0,0,0.85);
+            border-bottom: 0.5px solid rgba(255,255,255,0.08);
+        }
+
+        .theme-toggle {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(142,142,147,0.15);
+            border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+            color: var(--apple-label);
+        }
+        .theme-toggle:hover { background: rgba(142,142,147,0.25); }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(10,132,255,0.12);
+            color: var(--apple-blue);
+            border-radius: 100px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .dark .badge {
+            background: rgba(10,132,255,0.2);
+        }
+    </style>
+</head>
+<body class="apple-hero-bg antialiased">
+
+    <!-- Nav -->
+    <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span style="color: var(--apple-label); font-weight: 700; font-size: 18px; letter-spacing: -0.5px;">SlotArmor</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/admin/login" class="apple-btn" style="padding: 8px 18px; font-size: 14px; border-radius: 10px;">
+                    Admin Login
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                    <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <main class="max-w-6xl mx-auto px-6 pt-36 pb-24 text-center">
+        <div class="badge mb-6 mx-auto" style="width: fit-content;">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            Zero-commission booking
+        </div>
+
+        <h1 style="font-size: clamp(48px, 7vw, 80px); font-weight: 800; letter-spacing: -3px; line-height: 1.05; color: var(--apple-label);" class="mb-6">
+            Your bookings,<br>
+            <span style="background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">your rules.</span>
+        </h1>
+
+        <p style="font-size: 21px; color: var(--apple-secondary); font-weight: 400; line-height: 1.5; max-width: 520px; margin: 0 auto 40px; opacity: 0.85;">
+            Deposit-secured appointments for solo professionals. No platform fees. No middleman. Just your schedule.
+        </p>
+
+        <a href="/admin/login" class="apple-btn" style="font-size: 19px; padding: 18px 40px; border-radius: 16px;">
+            Get Started
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+
+        <!-- Feature Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-24 text-left">
+            <div class="glass-card p-7">
+                <div class="feature-icon mb-5" style="background: linear-gradient(135deg, #0A84FF, #5AC8FA);">🔒</div>
+                <h3 style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--apple-label);" class="mb-2">Deposit Hold</h3>
+                <p style="font-size: 15px; color: var(--apple-secondary); line-height: 1.6; opacity: 0.8;">Secure your slot with a small deposit. Protect your time from no-shows automatically.</p>
+            </div>
+            <div class="glass-card p-7">
+                <div class="feature-icon mb-5" style="background: linear-gradient(135deg, #30D158, #34C759);">💬</div>
+                <h3 style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--apple-label);" class="mb-2">WhatsApp Reminders</h3>
+                <p style="font-size: 15px; color: var(--apple-secondary); line-height: 1.6; opacity: 0.8;">Automatic H-1 and day-of reminders so clients never miss their appointment.</p>
+            </div>
+            <div class="glass-card p-7">
+                <div class="feature-icon mb-5" style="background: linear-gradient(135deg, #FF9F0A, #FF6B00);">⚡</div>
+                <h3 style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--apple-label);" class="mb-2">Zero Commission</h3>
+                <p style="font-size: 15px; color: var(--apple-secondary); line-height: 1.6; opacity: 0.8;">Keep 100% of your revenue. No middleman, no platform cuts, no hidden fees.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+        }
+    </script>
+</body>
+</html>

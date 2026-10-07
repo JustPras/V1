@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Deposit — SlotArmor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF3B30;
+            --bg: #F2F2F7; --surface: #FFFFFF; --surface2: #F2F2F7;
+            --label: #000; --label2: rgba(60,60,67,0.6);
+            --fill: rgba(120,120,128,0.12); --sep: rgba(60,60,67,0.12);
+        }
+        .dark {
+            --bg: #000; --surface: #1C1C1E; --surface2: #2C2C2E;
+            --label: #fff; --label2: rgba(235,235,245,0.6);
+            --fill: rgba(120,120,128,0.2); --sep: rgba(84,84,88,0.45);
+        }
+        * { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--label); min-height: 100vh; transition: background 0.3s; }
+
+        .bg-mesh {
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(10,132,255,0.1) 0%, transparent 55%), var(--bg);
+        }
+
+        .card { background: var(--surface); border-radius: 20px; box-shadow: 0 2px 20px rgba(0,0,0,0.07); }
+        .dark .card { box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+
+        /* ── Detail rows ── */
+        .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; }
+        .detail-row + .detail-row { border-top: 1px solid var(--sep); }
+        .detail-label { font-size: 15px; color: var(--label2); }
+        .detail-value { font-size: 15px; font-weight: 600; color: var(--label); }
+
+        /* ── Timer ring ── */
+        .timer-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto; }
+        .timer-wrap svg { transform: rotate(-90deg); display: block; }
+        .ring-bg { fill: none; stroke: var(--sep); stroke-width: 7; }
+        .ring-prog { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.5s ease; }
+        .timer-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+            font-variant-numeric: tabular-nums; color: var(--label); transition: color 0.5s;
+        }
+        .timer-pulse { animation: timerPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes timerPulse { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.1)} }
+
+        /* ── Tab Pills ── */
+        .tab-group { background: var(--surface2); border-radius: 12px; padding: 3px; display: flex; gap: 3px; }
+        .tab-pill { flex:1; padding: 10px; border-radius: 9px; border: none; background: transparent; color: var(--label2); font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .tab-pill.active { background: var(--surface); color: var(--label); box-shadow: 0 2px 8px rgba(0,0,0,0.12); transform: scale(1.02); }
+        .dark .tab-pill.active { box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+        /* ── Payment panels ── */
+        .pay-panel { display: none; }
+        .pay-panel.active { display: block; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ── QR ── */
+        .qr-box { background: white; border-radius: 18px; padding: 20px; display: inline-block; box-shadow: 0 4px 20px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .qr-box:hover { transform: scale(1.02); }
+
+        /* ── Copy address ── */
+        .copy-box {
+            background: var(--fill); border-radius: 12px; padding: 14px 16px;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+            word-break: break-all; text-align: center; color: var(--label);
+            cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent;
+            position: relative;
+        }
+        .copy-box:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(10,132,255,0.1); }
+        .copy-box.copied { border-color: var(--green); background: rgba(48,209,88,0.08); }
+        .copy-label { font-size: 12px; color: var(--label2); margin-top: 8px; text-align: center; transition: color 0.2s; }
+        .copy-label.copied { color: var(--green); }
+
+        /* ── Buttons ── */
+        .apple-btn { width: 100%; border: none; border-radius: 14px; padding: 17px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .apple-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .apple-btn:active { transform: scale(0.98); }
+        .apple-btn-blue { background: var(--blue); color: white; box-shadow: 0 4px 16px rgba(10,132,255,0.3); }
+        .apple-btn-dark { background: var(--label); color: var(--bg); }
+
+        /* ── Deposit badge ── */
+        .deposit-badge {
+            background: linear-gradient(135deg, rgba(10,132,255,0.1), rgba(94,92,230,0.07));
+            border-radius: 16px; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(10,132,255,0.12);
+        }
+        .deposit-amount { font-size: 38px; font-weight: 900; letter-spacing: -1.5px; color: var(--blue); }
+
+        /* ── Expired overlay ── */
+        #expired-overlay {
+            display: none; position: fixed; inset: 0; z-index: 99;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center;
+        }
+        #expired-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .expired-card { background: var(--surface); border-radius: 24px; padding: 40px; text-align: center; max-width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+
+        /* ── Theme ── */
+        .theme-btn { position:fixed; top:16px; right:16px; z-index:50; width:40px; height:40px; border-radius:50%; background:rgba(142,142,147,0.18); backdrop-filter:blur(10px); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--label); transition:all 0.2s; }
+        .theme-btn:hover { transform:scale(1.1); }
+
+        /* ── Urgency pulse (last 30s) ── */
+        @keyframes urgencyPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0.4)} 50%{box-shadow:0 0 0 10px rgba(255,59,48,0)} }
+        .urgent .timer-wrap { animation: urgencyPulse 1s infinite; border-radius: 50%; }
+    </style>
+</head>
+<body class="bg-mesh antialiased min-h-screen flex items-center justify-content-center py-8 px-4">
+
+    <button class="theme-btn" onclick="toggleTheme()">
+        <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+    </button>
+
+    <!-- Expired Overlay -->
+    <div id="expired-overlay">
+        <div class="expired-card">
+            <div style="font-size: 56px; margin-bottom: 16px;">⏰</div>
+            <h2 style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px;">Time's Up!</h2>
+            <p style="color: var(--label2); margin-bottom: 24px; line-height: 1.5;">Your slot hold has expired. Please book again to secure a new slot.</p>
+            <a href="javascript:history.back()" style="display:block; background:var(--blue); color:white; border-radius:12px; padding:14px; font-size:16px; font-weight:700; text-decoration:none; text-align:center;">Book Again</a>
+        </div>
+    </div>
+
+    <div class="w-full" style="max-width: 420px; margin: 0 auto;">
+        <div class="space-y-4">
+
+            <!-- Booking Summary Card -->
+            <div class="card p-6">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                    <div>
+                        <h1 style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Complete Booking</h1>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 5px;">
+                            <span style="font-family: 'SF Mono', monospace; font-size: 12px; color: var(--label2); letter-spacing: 1px;">{{ booking.reference_code }}</span>
+                            <button onclick="copyRef()" id="copy-ref-btn" style="background: var(--fill); border: none; border-radius: 5px; padding: 2px 7px; font-size: 11px; color: var(--label2); cursor: pointer; transition: all 0.2s;">⎘</button>
+                        </div>
+                    </div>
+                    <div style="background: rgba(48,209,88,0.1); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite;"></div>
+                        <span style="font-size: 13px; font-weight: 700; color: var(--green);">Held</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 18px;">
+                    <div class="detail-row">
+                        <span class="detail-label">Service</span>
+                        <span class="detail-value">{{ service.name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer</span>
+                        <span class="detail-value">{{ booking.customer_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date & Time</span>
+                        <span class="detail-value">{{ booking.booking_date }} · {{ booking.start_time }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">{{ service.duration_mins }} minutes</span>
+                    </div>
+                </div>
+
+                <div class="deposit-badge" style="margin-top: 18px;">
+                    <div>
+                        <p style="font-size: 13px; font-weight: 700; color: var(--blue);">Deposit Due Now</p>
+                        <p style="font-size: 12px; color: var(--label2); margin-top: 2px;">Pay to confirm your slot</p>
+                    </div>
+                    <div class="deposit-amount">${{ "%.2f"|format(deposit_amount / 100) }}</div>
+                </div>
+            </div>
+
+            <!-- Timer Card -->
+            <div class="card p-6" id="timer-card">
+                <div style="text-align: center;">
+                    <p style="font-size: 12px; font-weight: 700; color: var(--label2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 18px;">Slot Reserved For</p>
+
+                    <div class="timer-wrap" id="timer-wrap">
+                        <svg width="110" height="110" viewBox="0 0 110 110">
+                            <circle class="ring-bg" cx="55" cy="55" r="48"/>
+                            <circle class="ring-prog" id="ring" cx="55" cy="55" r="48"
+                                stroke-dasharray="301.6"
+                                stroke-dashoffset="0"
+                                style="stroke: var(--blue)"/>
+                        </svg>
+                        <div class="timer-text" id="timer-display">--:--</div>
+                    </div>
+
+                    <!-- Progress segments -->
+                    <div style="display: flex; gap: 4px; justify-content: center; margin-top: 16px;">
+                        <div style="text-align: center; padding: 6px 10px; border-radius: 8px; background: rgba(10,132,255,0.1);">
+                            <p style="font-size: 10px; font-weight: 700; color: var(--blue); text-transform: uppercase;">Blue</p>
+                            <p style="font-size: 11px; color: var(--label2);">> 4 min</p>
+                        </div>
+                        <div style="text-align: center; padding: 6px 10px; border-radius: 8px; background: rgba(255,159,10,0.1);">
+                            <p style="font-size: 10px; font-weight: 700; color: var(--orange); text-transform: uppercase;">Orange</p>
+                            <p style="font-size: 11px; color: var(--label2);">1–4 min</p>
+                        </div>
+                        <div style="text-align: center; padding: 6px 10px; border-radius: 8px; background: rgba(255,59,48,0.1);">
+                            <p style="font-size: 10px; font-weight: 700; color: var(--red); text-transform: uppercase;">Red</p>
+                            <p style="font-size: 11px; color: var(--label2);">< 1 min</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Card -->
+            <div class="card p-6">
+                <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.4px; margin-bottom: 18px;">Pay Deposit</h2>
+
+                <div class="tab-group" style="margin-bottom: 20px;">
+                    <button class="tab-pill active" id="tab-qris" onclick="showTab('qris')">QRIS (IDR)</button>
+                    <button class="tab-pill" id="tab-crypto" onclick="showTab('crypto')">🔗 Crypto</button>
+                </div>
+
+                <!-- QRIS -->
+                <div class="pay-panel active" id="panel-qris">
+                    <p style="font-size: 14px; color: var(--label2); text-align: center; margin-bottom: 18px;">
+                        Scan with GoPay, OVO, Dana, DANA, ShopeePay, or m-Banking
+                    </p>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div class="qr-box">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg"
+                                 alt="QRIS" style="width: 180px; height: 180px;">
+                        </div>
+                        <p style="font-size: 12px; color: var(--label2); margin-top: 10px;">Amount: <strong style="color: var(--label);">${{ "%.2f"|format(deposit_amount / 100) }}</strong></p>
+                    </div>
+                    <form action="/checkout/{{ booking.reference_code }}/simulate-payment" method="POST" onsubmit="handlePay(event)">
+                        <input type="hidden" name="method" value="qris">
+                        <button type="submit" class="apple-btn apple-btn-blue" id="pay-btn-qris">
+                            <span>✓ I Have Paid via QRIS</span>
+                        </button>
+                    </form>
+                    <p style="font-size: 12px; color: var(--label2); text-align: center; margin-top: 12px;">Only click after payment is complete</p>
+                </div>
+
+                <!-- Crypto -->
+                <div class="pay-panel" id="panel-crypto">
+                    <p style="font-size: 14px; color: var(--label2); text-align: center; margin-bottom: 14px;">
+                        Send exact amount on Polygon or BSC network
+                    </p>
+
+                    <div style="margin-bottom: 16px; background: var(--fill); border-radius: 12px; padding: 14px; text-align: center;">
+                        <p style="font-size: 13px; font-weight: 700; color: var(--label); margin-bottom: 4px;">Amount to Send</p>
+                        <p style="font-size: 22px; font-weight: 800; color: var(--blue);">${{ "%.2f"|format(deposit_amount / 100) }} USDT</p>
+                    </div>
+
+                    <div class="copy-box" id="crypto-address" onclick="copyCryptoAddress()">
+                        0x1234567890abcdef1234567890abcdef12345678
+                    </div>
+                    <p class="copy-label" id="copy-label">👆 Tap to copy wallet address</p>
+
+                    <div style="margin: 16px 0; display: flex; gap: 8px;">
+                        <div style="flex: 1; background: var(--fill); border-radius: 10px; padding: 12px; text-align: center;">
+                            <p style="font-size: 11px; color: var(--label2); font-weight: 600;">Network</p>
+                            <p style="font-size: 14px; font-weight: 700; margin-top: 2px;">Polygon</p>
+                        </div>
+                        <div style="flex: 1; background: var(--fill); border-radius: 10px; padding: 12px; text-align: center;">
+                            <p style="font-size: 11px; color: var(--label2); font-weight: 600;">Token</p>
+                            <p style="font-size: 14px; font-weight: 700; margin-top: 2px;">USDT/USDC</p>
+                        </div>
+                        <div style="flex: 1; background: var(--fill); border-radius: 10px; padding: 12px; text-align: center;">
+                            <p style="font-size: 11px; color: var(--label2); font-weight: 600;">Status</p>
+                            <p style="font-size: 14px; font-weight: 700; margin-top: 2px; color: var(--orange);">Pending</p>
+                        </div>
+                    </div>
+
+                    <form action="/checkout/{{ booking.reference_code }}/simulate-payment" method="POST" onsubmit="handlePay(event)">
+                        <input type="hidden" name="method" value="crypto">
+                        <button type="submit" class="apple-btn apple-btn-dark" id="pay-btn-crypto">
+                            Simulate Crypto Confirmation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ─── Countdown ─── */
+        const TOTAL = 600;
+        let remaining = {{ remaining_seconds }};
+        const circumference = 301.6;
+        const display = document.getElementById('timer-display');
+        const ring = document.getElementById('ring');
+        const timerCard = document.getElementById('timer-card');
+        const timerWrap = document.getElementById('timer-wrap');
+
+        function tick() {
+            if (remaining <= 0) {
+                display.textContent = '00:00';
+                document.getElementById('expired-overlay').classList.add('show');
+                return;
+            }
+
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            const newText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+
+            // Pulse on each second change in last minute
+            if (remaining <= 60) {
+                display.classList.remove('timer-pulse');
+                void display.offsetWidth;
+                display.classList.add('timer-pulse');
+                setTimeout(() => display.classList.remove('timer-pulse'), 500);
+            }
+
+            display.textContent = newText;
+
+            // Ring
+            const pct = remaining / TOTAL;
+            ring.style.strokeDashoffset = circumference * (1 - pct);
+
+            // Color transitions
+            if (remaining > 240) {
+                ring.style.stroke = 'var(--blue)';
+                display.style.color = 'var(--label)';
+                timerWrap.classList.remove('urgent');
+            } else if (remaining > 60) {
+                ring.style.stroke = 'var(--orange)';
+                display.style.color = 'var(--orange)';
+                timerWrap.classList.remove('urgent');
+            } else {
+                ring.style.stroke = 'var(--red)';
+                display.style.color = 'var(--red)';
+                timerWrap.classList.add('urgent');
+            }
+
+            remaining--;
+            setTimeout(tick, 1000);
+        }
+
+        tick();
+
+        /* ─── Tab switch ─── */
+        function showTab(tab) {
+            ['qris','crypto'].forEach(t => {
+                document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+            });
+        }
+
+        /* ─── Copy ref code ─── */
+        function copyRef() {
+            navigator.clipboard.writeText('{{ booking.reference_code }}');
+            const btn = document.getElementById('copy-ref-btn');
+            btn.textContent = '✓';
+            btn.style.color = 'var(--green)';
+            setTimeout(() => { btn.textContent = '⎘'; btn.style.color = ''; }, 1500);
+        }
+
+        /* ─── Copy crypto address ─── */
+        function copyCryptoAddress() {
+            const addr = '0x1234567890abcdef1234567890abcdef12345678';
+            navigator.clipboard.writeText(addr);
+            const box = document.getElementById('crypto-address');
+            const lbl = document.getElementById('copy-label');
+            box.classList.add('copied');
+            lbl.classList.add('copied');
+            lbl.textContent = '✅ Address copied!';
+            setTimeout(() => {
+                box.classList.remove('copied');
+                lbl.classList.remove('copied');
+                lbl.textContent = '👆 Tap to copy wallet address';
+            }, 2000);
+        }
+
+        /* ─── Pay loading state ─── */
+        function handlePay(e) {
+            const btn = e.submitter;
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+                    <path fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Processing…
+            `;
+        }
+
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+        /* ─── Theme ─── */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark'); localStorage.setItem('theme', 'light');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+            } else {
+                html.classList.add('dark'); localStorage.setItem('theme', 'dark');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+        }
+    </script>
+</body>
+</html>

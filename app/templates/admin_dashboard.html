@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — SlotArmor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF3B30; --purple: #5E5CE6;
+            --bg: #F2F2F7; --surface: #FFFFFF; --surface2: #F2F2F7; --surface3: #E5E5EA;
+            --label: #000; --label2: rgba(60,60,67,0.6);
+            --fill: rgba(120,120,128,0.12); --sep: rgba(60,60,67,0.12);
+        }
+        .dark {
+            --bg: #000; --surface: #1C1C1E; --surface2: #2C2C2E; --surface3: #3A3A3C;
+            --label: #fff; --label2: rgba(235,235,245,0.6);
+            --fill: rgba(120,120,128,0.2); --sep: rgba(84,84,88,0.45);
+        }
+        * { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--label); min-height: 100vh; transition: background 0.3s; }
+
+        /* ── Nav ── */
+        .topnav {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(242,242,247,0.88);
+            backdrop-filter: blur(20px) saturate(200%);
+            -webkit-backdrop-filter: blur(20px) saturate(200%);
+            border-bottom: 0.5px solid var(--sep);
+            height: 52px; display: flex; align-items: center; padding: 0 20px;
+        }
+        .dark .topnav { background: rgba(0,0,0,0.88); }
+
+        /* ── KPI Cards ── */
+        .kpi-card {
+            background: var(--surface); border-radius: 20px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06); padding: 22px;
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: default;
+        }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
+        .dark .kpi-card { box-shadow: 0 4px 24px rgba(0,0,0,0.45); }
+        .dark .kpi-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+
+        .kpi-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .kpi-num { font-size: 38px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+        .kpi-label { font-size: 12px; font-weight: 700; color: var(--label2); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+        /* ── Main Card ── */
+        .card { background: var(--surface); border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); overflow: hidden; }
+        .dark .card { box-shadow: 0 4px 24px rgba(0,0,0,0.45); }
+
+        /* ── Search & Filter ── */
+        .search-box {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--fill); border-radius: 12px; padding: 10px 14px;
+            border: 1.5px solid transparent; transition: all 0.2s;
+        }
+        .search-box:focus-within { border-color: var(--blue); background: var(--surface); box-shadow: 0 0 0 3px rgba(10,132,255,0.12); }
+        .search-box input { background: none; border: none; outline: none; font-size: 15px; color: var(--label); width: 100%; }
+        .search-box input::placeholder { color: var(--label2); }
+
+        .filter-pill {
+            padding: 7px 14px; border-radius: 100px; border: 1.5px solid var(--sep);
+            background: transparent; font-size: 13px; font-weight: 600; color: var(--label2);
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .filter-pill:hover { border-color: var(--blue); color: var(--blue); background: rgba(10,132,255,0.07); }
+        .filter-pill.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+        /* ── Table ── */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            text-align: left; padding: 12px 18px;
+            font-size: 11px; font-weight: 700; color: var(--label2);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--sep); cursor: pointer; user-select: none;
+        }
+        .data-table th:hover { color: var(--label); }
+        .data-table th .sort-icon { display: inline-block; margin-left: 4px; opacity: 0.4; font-size: 10px; }
+        .data-table th.sorted-asc .sort-icon::after { content: '▲'; opacity: 1; }
+        .data-table th.sorted-desc .sort-icon::after { content: '▼'; opacity: 1; }
+        .data-table th .sort-icon::after { content: '⬍'; }
+
+        .data-table td { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid var(--sep); vertical-align: middle; transition: background 0.15s; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr { transition: background 0.15s; }
+        .data-table tbody tr:hover td { background: var(--fill); }
+
+        /* Row enter animation */
+        @keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .row-animate { animation: rowIn 0.25s ease; }
+
+        /* ── Status Badges ── */
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .badge-pending { background: rgba(255,159,10,0.12); color: var(--orange); }
+        .badge-pending .badge-dot { background: var(--orange); animation: pulse 1.5s infinite; }
+        .badge-paid { background: rgba(48,209,88,0.12); color: var(--green); }
+        .badge-paid .badge-dot { background: var(--green); }
+        .badge-done { background: rgba(10,132,255,0.12); color: var(--blue); }
+        .badge-done .badge-dot { background: var(--blue); }
+        .badge-cancelled { background: rgba(255,59,48,0.1); color: var(--red); }
+        .badge-cancelled .badge-dot { background: var(--red); }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+        /* ── Action Buttons ── */
+        .btn-wa { background: rgba(37,211,102,0.12); color: #25D366; border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
+        .btn-wa:hover { background: rgba(37,211,102,0.22); transform: scale(1.05); }
+        .btn-done { background: rgba(48,209,88,0.1); color: var(--green); border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-done:hover { background: rgba(48,209,88,0.2); transform: scale(1.05); }
+        .btn-copy { background: var(--fill); border: none; border-radius: 7px; padding: 4px 8px; font-size: 11px; color: var(--label2); cursor: pointer; transition: all 0.2s; font-family: 'SF Mono', monospace; }
+        .btn-copy:hover { color: var(--blue); background: rgba(10,132,255,0.1); }
+
+        /* ── Inputs ── */
+        .apple-input {
+            background: var(--fill); border: 1.5px solid transparent; border-radius: 10px;
+            padding: 10px 14px; font-size: 15px; color: var(--label); width: 100%; outline: none; transition: all 0.2s;
+        }
+        .apple-input:focus { border-color: var(--blue); background: var(--surface); box-shadow: 0 0 0 3px rgba(10,132,255,0.12); }
+        .apple-input::placeholder { color: var(--label2); }
+        select.apple-input { appearance: none; }
+        .dark .apple-input { color-scheme: dark; }
+
+        .field-label { font-size: 11px; font-weight: 700; color: var(--label2); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+
+        .btn-add { width: 100%; background: var(--blue); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-add:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,132,255,0.3); }
+        .btn-add:active { transform: scale(0.98); }
+
+        .btn-delete { background: rgba(255,59,48,0.1); color: var(--red); border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-delete:hover { background: rgba(255,59,48,0.2); transform: scale(1.05); }
+
+        /* ── Service Items ── */
+        .svc-item {
+            background: var(--surface2); border-radius: 14px; padding: 16px 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.2s;
+        }
+        .svc-item:hover { transform: translateX(2px); }
+
+        /* ── Toast ── */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: var(--surface); border-radius: 14px; padding: 14px 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px;
+            min-width: 260px; font-size: 14px; font-weight: 600;
+            animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-left: 4px solid var(--green);
+        }
+        .dark .toast { box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .toast.error { border-left-color: var(--red); }
+        .toast.info { border-left-color: var(--blue); }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(20px) scale(0.95); } }
+        .toast.out { animation: toastOut 0.25s ease forwards; }
+
+        /* ── Theme ── */
+        .theme-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--fill); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--label); transition: all 0.2s; }
+        .theme-btn:hover { background: rgba(120,120,128,0.25); transform: scale(1.1); }
+
+        /* ── Nav links ── */
+        .nav-link { font-size: 14px; font-weight: 500; text-decoration: none; padding: 7px 12px; border-radius: 8px; transition: all 0.2s; }
+        .nav-link:hover { background: var(--fill); }
+
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--label2); }
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 15px; }
+
+        /* ── Skeleton ── */
+        .skeleton { background: linear-gradient(90deg, var(--fill) 25%, var(--surface2) 50%, var(--fill) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* ── Export btn ── */
+        .btn-export { background: rgba(48,209,88,0.12); color: var(--green); border: none; border-radius: 10px; padding: 9px 16px; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-export:hover { background: rgba(48,209,88,0.22); transform: scale(1.03); }
+
+        .ref-mono { font-family: 'SF Mono', monospace; font-size: 11px; color: var(--label2); }
+
+        /* ── No results ── */
+        #no-results { display: none; }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <!-- Nav -->
+    <nav class="topnav">
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; max-width: 1400px; margin: 0 auto; padding: 0 4px;">
+            <div style="width: 30px; height: 30px; background: linear-gradient(145deg, #0A84FF, #5E5CE6); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"/>
+                </svg>
+            </div>
+            <span style="font-size: 16px; font-weight: 800; letter-spacing: -0.4px; color: var(--label);">SlotArmor</span>
+            <div style="width: 1px; height: 14px; background: var(--sep); margin: 0 2px;"></div>
+            <span style="font-size: 14px; color: var(--label2);">{{ merchant.name }}</span>
+            <div style="flex:1;"></div>
+            <button class="theme-btn" onclick="toggleTheme()">
+                <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+            <a href="/b/{{ merchant.slug }}" target="_blank" class="nav-link" style="color: var(--blue);">
+                Public Page ↗
+            </a>
+            <a href="/admin/logout" class="nav-link" style="color: var(--red);">Logout</a>
+        </div>
+    </nav>
+
+    <div style="max-width: 1400px; margin: 0 auto; padding: 24px 20px;">
+
+        <!-- KPI Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+
+            <div class="kpi-card" onclick="filterByStatus('all')">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                    <div class="kpi-icon" style="background: rgba(10,132,255,0.12);">
+                        <svg class="w-5 h-5" style="color: var(--blue);" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"/>
+                        </svg>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 700; color: var(--blue); background: rgba(10,132,255,0.1); padding: 3px 8px; border-radius: 6px;">ALL</span>
+                </div>
+                <div class="kpi-num" id="kpi-total" style="color: var(--label);" data-target="{{ kpis.total_bookings }}">0</div>
+                <div class="kpi-label">Total Bookings</div>
+            </div>
+
+            <div class="kpi-card" onclick="filterByStatus('paid')">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                    <div class="kpi-icon" style="background: rgba(48,209,88,0.12);">
+                        <svg class="w-5 h-5" style="color: var(--green);" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-num" id="kpi-deposits" style="color: var(--green);" data-target="{{ kpis.deposits_collected }}">$0</div>
+                <div class="kpi-label">Deposits Collected</div>
+            </div>
+
+            <div class="kpi-card" onclick="filterByStatus('done')">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                    <div class="kpi-icon" style="background: rgba(94,92,230,0.12);">
+                        <svg class="w-5 h-5" style="color: var(--purple);" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-num" id="kpi-revenue" style="color: var(--purple);" data-target="{{ kpis.total_revenue }}">$0</div>
+                <div class="kpi-label">Total Revenue</div>
+            </div>
+
+            <div class="kpi-card" onclick="filterByStatus('pending')">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                    <div class="kpi-icon" style="background: rgba(255,159,10,0.12);">
+                        <svg class="w-5 h-5" style="color: var(--orange);" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                        </svg>
+                    </div>
+                    {% if kpis.pending_holds > 0 %}
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--orange); animation: pulse 1.5s infinite; display: inline-block;"></span>
+                    {% endif %}
+                </div>
+                <div class="kpi-num" id="kpi-pending" style="color: var(--orange);" data-target="{{ kpis.pending_holds }}">0</div>
+                <div class="kpi-label">Pending Holds</div>
+            </div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="card" style="margin-bottom: 20px;">
+
+            <!-- Card Header -->
+            <div style="padding: 18px 20px; border-bottom: 1px solid var(--sep);">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.4px;">Bookings</h2>
+                    <a href="/admin/export/csv" class="btn-export">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Export CSV
+                    </a>
+                </div>
+
+                <!-- Search + Filters -->
+                <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                    <div class="search-box" style="flex: 1; min-width: 200px;">
+                        <svg class="w-4 h-4" style="color: var(--label2); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search name, ref, service…" oninput="applyFilter()">
+                        <button id="clear-search" onclick="clearSearch()" style="background:none;border:none;cursor:pointer;color:var(--label2);display:none;font-size:16px;line-height:1;">×</button>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button class="filter-pill active" data-status="all" onclick="filterByStatus('all')">All</button>
+                        <button class="filter-pill" data-status="pending" onclick="filterByStatus('pending')">⏳ Pending</button>
+                        <button class="filter-pill" data-status="paid" onclick="filterByStatus('paid')">✅ Paid</button>
+                        <button class="filter-pill" data-status="done" onclick="filterByStatus('done')">📌 Done</button>
+                        <button class="filter-pill" data-status="cancelled" onclick="filterByStatus('cancelled')">❌ Cancelled</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div style="overflow-x: auto;">
+                <table class="data-table" id="bookings-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('customer')" data-col="customer">Customer <span class="sort-icon"></span></th>
+                            <th onclick="sortTable('service')" data-col="service">Service <span class="sort-icon"></span></th>
+                            <th onclick="sortTable('date')" data-col="date">Date & Time <span class="sort-icon"></span></th>
+                            <th onclick="sortTable('status')" data-col="status">Status <span class="sort-icon"></span></th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-tbody">
+                        {% for b in bookings %}
+                        <tr class="booking-row row-animate"
+                            data-status="{{ b.status }}"
+                            data-customer="{{ b.customer_name|lower }}"
+                            data-service="{{ b.service_name|lower }}"
+                            data-ref="{{ b.reference_code|lower }}"
+                            data-date="{{ b.booking_date }}">
+
+                            <td>
+                                <div style="font-weight: 700; font-size: 15px;">{{ b.customer_name }}</div>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                                    <span class="ref-mono">{{ b.customer_phone }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">{{ b.service_name }}</div>
+                                <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                    <span class="ref-mono">{{ b.reference_code }}</span>
+                                    <button class="btn-copy" onclick="copyRef('{{ b.reference_code }}', this)" title="Copy ref code">⎘</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">{{ b.booking_date }}</div>
+                                <div style="font-size: 13px; color: var(--label2);">{{ b.start_time }}</div>
+                            </td>
+                            <td>
+                                {% if b.status == 'pending' %}
+                                <span class="badge badge-pending">
+                                    <span class="badge-dot"></span>
+                                    Pending
+                                    (<span class="timer-countdown" data-secs="{{ b.remaining_seconds }}"></span>)
+                                </span>
+                                {% elif b.status == 'paid' %}
+                                <span class="badge badge-paid"><span class="badge-dot"></span>Deposit Paid</span>
+                                {% elif b.status == 'done' %}
+                                <span class="badge badge-done"><span class="badge-dot"></span>Done ✓</span>
+                                {% elif b.status == 'cancelled' %}
+                                <span class="badge badge-cancelled"><span class="badge-dot"></span>Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                                    <a href="https://wa.me/{{ b.customer_phone|replace('+','') }}" target="_blank" class="btn-wa">
+                                        💬 WA
+                                    </a>
+                                    {% if b.status == 'paid' %}
+                                    <form action="/admin/booking/{{ b.id }}/done" method="POST" style="display: inline;" onsubmit="handleMarkDone(event, this)">
+                                        <button type="submit" class="btn-done">✓ Done</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- No results -->
+                <div id="no-results" class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <p>No bookings match your search.</p>
+                </div>
+
+                {% if not bookings %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>No bookings yet.</p>
+                    <p style="margin-top: 6px; font-size: 13px;">
+                        Share your <a href="/b/{{ merchant.slug }}" target="_blank" style="color: var(--blue); font-weight: 600;">booking page</a> to get started.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Result count -->
+            <div style="padding: 12px 20px; border-top: 1px solid var(--sep); font-size: 13px; color: var(--label2);">
+                Showing <span id="result-count">{{ bookings|length }}</span> of {{ bookings|length }} bookings
+            </div>
+        </div>
+
+        <!-- Services Section -->
+        <div class="card">
+            <div style="padding: 18px 20px; border-bottom: 1px solid var(--sep);">
+                <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.4px;">Services</h2>
+                <p style="font-size: 14px; color: var(--label2); margin-top: 3px;">Manage what appears on your booking page</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 0;">
+
+                <!-- Service list + add form in responsive grid -->
+                <div style="display: grid; grid-template-columns: 1fr; gap: 0;" id="service-grid">
+
+                    <!-- Add form always visible at top on mobile, right on desktop -->
+                    <div style="padding: 20px; border-bottom: 1px solid var(--sep);" id="add-form-section">
+                        <p style="font-size: 14px; font-weight: 800; color: var(--label); margin-bottom: 16px;">➕ Add New Service</p>
+                        <form action="/admin/services/add" method="POST" id="add-service-form" class="space-y-3" onsubmit="handleAddService(event)">
+                            <div>
+                                <span class="field-label">Service Name</span>
+                                <input type="text" name="name" required placeholder="e.g. Haircut & Styling" class="apple-input">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <span class="field-label">Duration (min)</span>
+                                    <input type="number" name="duration_mins" required min="1" placeholder="60" class="apple-input">
+                                </div>
+                                <div>
+                                    <span class="field-label">Price (USD)</span>
+                                    <input type="number" name="price" required min="1" placeholder="50" class="apple-input">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <span class="field-label">Deposit Type</span>
+                                    <select name="deposit_type" class="apple-input">
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="flat">Flat ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <span class="field-label">Amount</span>
+                                    <input type="number" name="deposit_amount" required min="1" placeholder="30" class="apple-input">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-add" id="add-btn">
+                                <span id="add-label">Add Service</span>
+                                <div id="add-spinner" style="display:none;">
+                                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+                                        <path fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Existing services -->
+                    <div style="padding: 20px;" id="service-list-section">
+                        <p style="font-size: 14px; font-weight: 800; color: var(--label); margin-bottom: 16px;">Your Services ({{ merchant_services|length }})</p>
+                        <div class="space-y-3" id="svc-list">
+                            {% for s in merchant_services %}
+                            <div class="svc-item" id="svc-{{ s.id }}">
+                                <div>
+                                    <p style="font-size: 16px; font-weight: 700; color: var(--label);">{{ s.name }}</p>
+                                    <p style="font-size: 13px; color: var(--label2); margin-top: 3px;">
+                                        {{ s.duration_mins }} min &bull; ${{ "%.2f"|format(s.price / 100) }} &bull;
+                                        Deposit: {% if s.deposit_type == 'percentage' %}{{ s.deposit_amount }}%{% else %}${{ "%.2f"|format(s.deposit_amount / 100) }} flat{% endif %}
+                                    </p>
+                                </div>
+                                <form action="/admin/services/{{ s.id }}/delete" method="POST"
+                                      onsubmit="handleDeleteService(event, this, {{ s.id }})">
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                            {% if not merchant_services %}
+                            <div style="text-align: center; padding: 30px 0; color: var(--label2);">
+                                <p style="font-size: 32px; margin-bottom: 8px;">✨</p>
+                                <p>No services yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ─────────────────────────────
+           KPI Counter Animation
+        ───────────────────────────── */
+        function animateCounter(el, target, isPrice = false, duration = 1200) {
+            let start = 0;
+            const startTime = performance.now();
+            function step(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = Math.round(eased * target);
+                el.textContent = isPrice ? '$' + (value / 100).toFixed(0) : value;
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Trigger on load
+        window.addEventListener('DOMContentLoaded', () => {
+            animateCounter(document.getElementById('kpi-total'), {{ kpis.total_bookings }});
+            animateCounter(document.getElementById('kpi-deposits'), {{ kpis.deposits_collected }}, true);
+            animateCounter(document.getElementById('kpi-revenue'), {{ kpis.total_revenue }}, true);
+            animateCounter(document.getElementById('kpi-pending'), {{ kpis.pending_holds }});
+        });
+
+        /* ─────────────────────────────
+           Pending Countdown Timers
+        ───────────────────────────── */
+        document.querySelectorAll('.timer-countdown').forEach(el => {
+            let sec = parseInt(el.dataset.secs);
+            function fmt(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+            function tick() {
+                if (sec <= 0) {
+                    const badge = el.closest('.badge');
+                    if (badge) { badge.className = 'badge badge-cancelled'; badge.innerHTML = '<span class="badge-dot" style="background:var(--red)"></span>Expired'; }
+                    return;
+                }
+                el.textContent = fmt(sec--);
+                setTimeout(tick, 1000);
+            }
+            if (!isNaN(sec)) tick();
+        });
+
+        /* ─────────────────────────────
+           Search & Filter
+        ───────────────────────────── */
+        let activeStatus = 'all';
+        let searchQuery = '';
+        let sortCol = '';
+        let sortDir = 'asc';
+
+        function applyFilter() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase();
+            document.getElementById('clear-search').style.display = searchQuery ? 'block' : 'none';
+            renderRows();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+            document.getElementById('clear-search').style.display = 'none';
+            renderRows();
+        }
+
+        function filterByStatus(status) {
+            activeStatus = status;
+            document.querySelectorAll('.filter-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.status === status);
+            });
+            renderRows();
+        }
+
+        function renderRows() {
+            const rows = document.querySelectorAll('.booking-row');
+            let visible = 0;
+            rows.forEach(row => {
+                const matchStatus = activeStatus === 'all' || row.dataset.status === activeStatus;
+                const matchSearch = !searchQuery ||
+                    row.dataset.customer.includes(searchQuery) ||
+                    row.dataset.service.includes(searchQuery) ||
+                    row.dataset.ref.includes(searchQuery);
+                const show = matchStatus && matchSearch;
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            document.getElementById('result-count').textContent = visible;
+            document.getElementById('no-results').style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
+        }
+
+        /* ─────────────────────────────
+           Sort Table
+        ───────────────────────────── */
+        function sortTable(col) {
+            if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            else { sortCol = col; sortDir = 'asc'; }
+
+            // Update headers
+            document.querySelectorAll('.data-table th').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                if (th.dataset.col === col) th.classList.add('sorted-' + sortDir);
+            });
+
+            const tbody = document.getElementById('bookings-tbody');
+            const rows = Array.from(tbody.querySelectorAll('.booking-row'));
+            rows.sort((a, b) => {
+                let av = a.dataset[col] || '';
+                let bv = b.dataset[col] || '';
+                return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+            });
+            rows.forEach(r => tbody.appendChild(r));
+        }
+
+        /* ─────────────────────────────
+           Copy Ref Code
+        ───────────────────────────── */
+        function copyRef(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = '✓';
+                btn.style.color = 'var(--green)';
+                setTimeout(() => { btn.textContent = '⎘'; btn.style.color = ''; }, 1500);
+            });
+            showToast('Reference code copied!', 'info');
+        }
+
+        /* ─────────────────────────────
+           Mark Done with optimistic UI
+        ───────────────────────────── */
+        function handleMarkDone(e, form) {
+            const row = form.closest('tr');
+            const badge = row.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge badge-done';
+                badge.innerHTML = '<span class="badge-dot" style="background:var(--blue)"></span>Done ✓';
+            }
+            form.closest('div').innerHTML = '';
+            showToast('Booking marked as done!', 'success');
+        }
+
+        /* ─────────────────────────────
+           Add Service with loading
+        ───────────────────────────── */
+        function handleAddService(e) {
+            document.getElementById('add-label').style.display = 'none';
+            document.getElementById('add-spinner').style.display = 'flex';
+            document.getElementById('add-btn').disabled = true;
+        }
+
+        /* ─────────────────────────────
+           Delete Service with animation
+        ───────────────────────────── */
+        function handleDeleteService(e, form, id) {
+            e.preventDefault();
+            if (!confirm('Delete this service?')) return;
+            const item = document.getElementById('svc-' + id);
+            if (item) {
+                item.style.transition = 'all 0.35s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(20px) scale(0.95)';
+                setTimeout(() => {
+                    item.remove();
+                    form.submit();
+                }, 350);
+            } else {
+                form.submit();
+            }
+            showToast('Service deleted', 'error');
+        }
+
+        /* ─────────────────────────────
+           Toast
+        ───────────────────────────── */
+        function showToast(msg, type = 'success') {
+            const icons = { success: '✅', error: '🗑️', info: '📋' };
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type !== 'success' ? type : ''}`;
+            toast.innerHTML = `<span style="font-size:18px;">${icons[type]}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /* ─────────────────────────────
+           Desktop responsive layout
+        ───────────────────────────── */
+        function applyLayout() {
+            const grid = document.getElementById('service-grid');
+            if (window.innerWidth >= 768) {
+                grid.style.gridTemplateColumns = '1fr 1fr';
+                const list = document.getElementById('service-list-section');
+                const form = document.getElementById('add-form-section');
+                list.style.borderRight = '1px solid var(--sep)';
+                list.style.borderBottom = 'none';
+                form.style.borderBottom = 'none';
+                // Reorder: list first on desktop
+                grid.appendChild(list);
+                grid.appendChild(form);
+            } else {
+                grid.style.gridTemplateColumns = '1fr';
+                const form = document.getElementById('add-form-section');
+                const list = document.getElementById('service-list-section');
+                form.style.borderBottom = '1px solid var(--sep)';
+                list.style.borderRight = 'none';
+            }
+        }
+        applyLayout();
+        window.addEventListener('resize', applyLayout);
+
+        /* ─────────────────────────────
+           Theme
+        ───────────────────────────── */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark'); localStorage.setItem('theme', 'light');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+            } else {
+                html.classList.add('dark'); localStorage.setItem('theme', 'dark');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+        }
+    </script>
+</body>
+</html>

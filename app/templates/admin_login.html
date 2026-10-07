@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — SlotArmor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --apple-blue: #0A84FF;
+            --apple-bg: #F2F2F7;
+            --apple-surface: #FFFFFF;
+            --apple-label: #000000;
+            --apple-secondary-label: rgba(60,60,67,0.6);
+            --apple-fill: rgba(120,120,128,0.12);
+            --apple-separator: rgba(60,60,67,0.29);
+        }
+        .dark {
+            --apple-blue: #0A84FF;
+            --apple-bg: #000000;
+            --apple-surface: #1C1C1E;
+            --apple-label: #FFFFFF;
+            --apple-secondary-label: rgba(235,235,245,0.6);
+            --apple-fill: rgba(120,120,128,0.2);
+            --apple-separator: rgba(84,84,88,0.65);
+        }
+        * { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif; box-sizing: border-box; }
+
+        body {
+            background: var(--apple-bg);
+            color: var(--apple-label);
+            transition: background 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .apple-bg-mesh {
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 10%, rgba(10,132,255,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 85% 85%, rgba(94,92,230,0.1) 0%, transparent 60%),
+                var(--apple-bg);
+        }
+
+        .card {
+            background: var(--apple-surface);
+            border-radius: 20px;
+            box-shadow: 0 4px 60px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 36px;
+        }
+
+        .dark .card {
+            box-shadow: 0 4px 60px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05) inset;
+        }
+
+        .apple-input {
+            width: 100%;
+            background: var(--apple-fill);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 16px;
+            color: var(--apple-label);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .apple-input::placeholder { color: var(--apple-secondary-label); }
+
+        .apple-input:focus {
+            border-color: var(--apple-blue);
+            background: var(--apple-surface);
+            box-shadow: 0 0 0 4px rgba(10,132,255,0.15);
+        }
+
+        .dark .apple-input:focus {
+            background: rgba(30,30,32,0.9);
+            box-shadow: 0 0 0 4px rgba(10,132,255,0.2);
+        }
+
+        .apple-btn-primary {
+            width: 100%;
+            background: var(--apple-blue);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 15px;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .apple-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(10,132,255,0.35); }
+        .apple-btn-primary:active { transform: scale(0.98); filter: brightness(0.95); }
+
+        .error-banner {
+            background: rgba(255,59,48,0.1);
+            border: 1px solid rgba(255,59,48,0.25);
+            border-radius: 12px;
+            color: #FF3B30;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .dark .error-banner {
+            background: rgba(255,69,58,0.15);
+            border-color: rgba(255,69,58,0.3);
+            color: #FF453A;
+        }
+
+        .logo-mark {
+            width: 64px; height: 64px;
+            background: linear-gradient(145deg, #0A84FF, #5E5CE6);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(10,132,255,0.3);
+        }
+
+        .theme-toggle {
+            position: fixed; top: 16px; right: 16px;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--apple-fill);
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--apple-label);
+            transition: background 0.2s ease;
+        }
+        .theme-toggle:hover { background: var(--apple-separator); }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--apple-secondary-label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--apple-separator);
+            margin: 24px 0;
+        }
+    </style>
+</head>
+<body class="apple-bg-mesh antialiased p-6">
+
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+    </button>
+
+    <div class="card">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="logo-mark">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -0.8px; color: var(--apple-label);">SlotArmor</h1>
+            <p style="font-size: 15px; color: var(--apple-secondary-label); margin-top: 4px;">Merchant Admin</p>
+        </div>
+
+        {% if error %}
+        <div class="error-banner mb-6">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                {{ error }}
+            </div>
+        </div>
+        {% endif %}
+
+        <form action="/admin/login" method="POST" class="space-y-5">
+            <div>
+                <label for="email">Email Address</label>
+                <input type="email" name="email" id="email" required placeholder="you@example.com" class="apple-input">
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" required placeholder="••••••••" class="apple-input">
+            </div>
+            <div style="padding-top: 4px;">
+                <button type="submit" class="apple-btn-primary">Sign In</button>
+            </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <p style="text-align: center; font-size: 13px; color: var(--apple-secondary-label);">
+            <a href="/" style="color: var(--apple-blue); text-decoration: none; font-weight: 500;">← Back to Home</a>
+        </p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+        }
+    </script>
+</body>
+</html>
